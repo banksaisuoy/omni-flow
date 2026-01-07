@@ -1,7 +1,7 @@
-# https://render.com/docs/blueprint-spec
 services:
   - type: web
     name: omni-flow
+    root: omni-flow
     runtime: node
     plan: free
     buildCommand: npm install && npx prisma generate && npm run build
@@ -10,10 +10,10 @@ services:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false # Set this in Render Dashboard
+        value: postgres://postgres:as0861056282@db.zkuwqnfcrinwpnllakrc.supabase.co:5432/postgres
       - key: NEXTAUTH_SECRET
-        generateValue: true
+        value: ElhG/JgEis2unPrAYViC0ynRP3h9qGe1DkPG31c8fsg=
       - key: NEXTAUTH_URL
-        sync: false # Set to your Render URL
+        value: https://omni-flow.onrender.com
       - key: GOOGLE_GENERATIVE_AI_API_KEY
-        sync: false # Set this in Render Dashboard
+        value: AIzaSyC-4hF6e1JDKiwtADwg8co7yNGS4D6NwKU
