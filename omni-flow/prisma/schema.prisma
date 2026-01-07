@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Module A: Authentication & User Management
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String    // Hashed with bcrypt
+  name          String?
+  role          Role      @default(USER) // RBAC: USER, SELLER, ADMIN
+  status        String    @default("active") // active, suspended
+  address       String?
+  city          String?
+  phone         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  orders        Order[]
+  accounts      Account[] // For OAuth (NextAuth) support later if needed
+  sessions      Session[]
+  reviews       Review[]
+  cart          CartItem[]
+}
+
+enum Role {
+  USER
+  SELLER
+  ADMIN
+}
+
+// Module B: Product Management (CMS)
+model Product {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  price       Float
+  stock       Int      // Module B7: Inventory
+  category    String
+  tags        String[] // Module B10: Auto-Tagging
+  images      String[] // Support multiple images
+  
+  // AI Generated Metadata
+  aiTags      String[]
+  seoTitle    String?  // Module B11: SEO
+  seoDesc     String?
+  
+  // Module C: Search & Discovery
+  views       Int      @default(0)
+  rating      Float    @default(0.0)
+
+  // Marketing Flags
+  isFlashSale Boolean  @default(false)
+  flashPrice  Float?
+  isPinned    Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+  reviews     Review[]
+  cartItems   CartItem[]
+}
+
+// Module D: Shopping & Transactions
+model Order {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  total       Float
+  status      OrderStatus @default(PENDING)
+  slipImage   String?     // Module D20: Manual Slip Upload
+  isVerified  Boolean     @default(false) // Module D21: AI Fraud Detection
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float    // Snapshot of price at purchase time
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  
+  @@unique([userId, productId]) // Prevent duplicates in cart
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// Module E: Customer Engagement
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+// NextAuth Tables (Optional but good for extensibility)
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// Module G: System Health (AI Logs)
+model SystemLog {
+  id        String   @id @default(uuid())
+  level     String   // ERROR, WARN, INFO
+  message   String
+  aiDiagnosis String? // Module G33: AI Analysis of the error
+  createdAt DateTime @default(now())
+}

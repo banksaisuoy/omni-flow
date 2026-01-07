@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  web:
+    container_name: omni-flow-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/omniflow?schema=public
+      - NEXTAUTH_SECRET=changeme_to_a_real_secret
+      - NEXTAUTH_URL=http://localhost:3001
+      - GOOGLE_GENERATIVE_AI_API_KEY=AIzaSyC-4hF6e1JDKiwtADwg8co7yNGS4D6NwKU
+    depends_on:
+      - db
+
+  db:
+    container_name: omni-flow-db
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: omniflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

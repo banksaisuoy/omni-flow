@@ -1,0 +1,9 @@
+const bcrypt = require('bcryptjs');
+const fs = require('fs');
+
+const hash = bcrypt.hashSync('password123', 10);
+const sql = `INSERT INTO "User" (id, email, password, name, role, "createdAt", "updatedAt") VALUES ('a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d', 'user@demo.com', '${hash}', 'Admin User', 'ADMIN', NOW(), NOW()) ON CONFLICT (email) DO NOTHING;
+INSERT INTO "Product" (id, title, description, price, category, stock, images, "aiTags", "createdAt", "updatedAt") VALUES ('p1', 'Future Sneakers X1', 'The future of footwear is here. AI-designed comfort.', 299.99, 'Footwear', 50, ARRAY['/placeholder.jpg'], ARRAY['sneakers', 'future'], NOW(), NOW()) ON CONFLICT (id) DO NOTHING;`;
+
+fs.writeFileSync('seed.sql', sql);
+console.log('Generated seed.sql');
