@@ -22,16 +22,19 @@ You have access to the following backend services. Use them to verify data, depl
 - **Service Name:** `omni-flow`
 - **Service ID:** `srv-d5f03gmmcj7s73asfui0`
 - **Auto-Deploy:** Enabled on commits to the `main` branch.
-- **Manual Trigger:** If you need to trigger a deployment test, send a POST request:
+- **Manual Trigger:** If you need to trigger a deployment test, use the environment variable `RENDER_API_KEY` (never hardcode it):
   ```javascript
-  fetch('https://api.render.com/v1/services/srv-d5f03gmmcj7s73asfui0/deploys', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer rnd_qj1VR0lFj97iAV8NaGVSUrOzH6D6',
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
-    }
-  });
+  const renderApiKey = process.env.RENDER_API_KEY;
+  if (renderApiKey) {
+    fetch('https://api.render.com/v1/services/srv-d5f03gmmcj7s73asfui0/deploys', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${renderApiKey}`,
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      }
+    });
+  }
   ```
 
 ## 🛡️ Security & Zero-Defects Standard
