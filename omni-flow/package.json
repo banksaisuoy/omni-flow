@@ -1,24 +1,22 @@
-{
-  "name": "omni-flow",
-  "dependencies": {
-    "@prisma/client": "5.22.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.89.0",
     "lucide-react": "^0.562.0",
-    "postcss": "^8",
-    "react-hook-form": "^7.69.0",
-    "typescript": "^5",
     "next": "15.1.0",
+    "postcss": "^8",
     "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react-dom": "19.0.0",
+    "react-hook-form": "^7.69.0",
+    "typescript": "^5"
   },
   "devDependencies": {
-    "jest": "^29.7.0",
-    "ts-node": "^10.9.1",
+    "@eslint/eslintrc": "^3.3.6",
     "@testing-library/jest-dom": "^6.4.2",
     "@types/jest": "^29.5.12",
+    "eslint-config-next": "^16.2.12",
+    "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "ts-jest": "^29.1.2"
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.1"
   },
   "scripts": {
     "test": "jest",
