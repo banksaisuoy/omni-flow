@@ -19,7 +19,13 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  let session = null;
+  try {
+    session = await auth();
+  } catch (e) {
+    // DB connection might fail — render without session
+    console.error("Auth failed (DB may be unreachable):", e);
+  }
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
