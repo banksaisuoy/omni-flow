@@ -1,0 +1,64 @@
+name: v10 PR Quality Review
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: write
+
+env:
+  GH_PAT: ${{ secrets.GH_PAT }}
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      startsWith(github.event.pull_request.head.ref, 'jules-') ||
+      contains(github.event.pull_request.body, 'Automated PR from Jules')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - name: Install deps
+        run: pip install --break-system-packages psycopg2-binary requests || true
+      
+      - name: Download v10 modules from SVEO repo
+        run: |
+          mkdir -p .github/jules-v10/modules .github/jules-v10/clients .github/jules-v10/db
+          # Download needed files from SVEO repo (public, no auth needed)
+          for f in modules/pr_quality_reviewer.py clients/api_clients.py db/database.py; do
+            url="https://raw.githubusercontent.com/banksaisuoy/SVEO/main/.github/jules-v10/$f"
+            curl -sL "$url" -o ".github/jules-v10/$f" --create-dirs
+          done
+          # Create __init__.py files
+          touch .github/jules-v10/__init__.py
+          touch .github/jules-v10/modules/__init__.py
+          touch .github/jules-v10/clients/__init__.py
+          touch .github/jules-v10/db/__init__.py
+      
+      - name: Review PR
+        env:
+          REPO: ${{ github.event.repository.name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python3 -c "
+          import sys, os
+          sys.path.insert(0, '.github/jules-v10')
+          from modules.pr_quality_reviewer import review_pr
+          passed, score, issues = review_pr('$REPO', $PR_NUMBER)
+          print(f'\\n=== Result ===')
+          print(f'Passed: {passed}')
+          print(f'Score: {score}/100')
+          print(f'Issues: {issues}')
+          if not passed:
+            print('\\n⚠️ PR REJECTED by quality reviewer — will NOT be merged')
+            sys.exit(1)
+          "
