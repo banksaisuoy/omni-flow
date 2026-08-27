@@ -1,7 +1,8 @@
 'use server'
 
+import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
-import { generateObject, generateText } from 'ai'
+import { generateObject } from 'ai'
 import { z } from 'zod'
 import { google } from '@/lib/ai'
 import { revalidatePath } from 'next/cache'
@@ -18,9 +19,19 @@ const ProductSchema = z.object({
     seoDesc: z.string(),
 })
 
+// --- Authorization ---
+
+async function requireAdmin() {
+    const session = await auth()
+    return session?.user?.role === 'ADMIN'
+}
+
 // --- AI Actions ---
 
 export async function generateProductDetails(prompt: string, imageBase64?: string) {
+    if (!(await requireAdmin())) return { success: false, error: 'Unauthorized' }
+    if (!prompt.trim() || prompt.length > 2000) return { success: false, error: 'Invalid prompt' }
+    if (imageBase64 && imageBase64.length > 5_000_000) return { success: false, error: 'Image is too large' }
     try {
         const messages: any[] = [
             {
@@ -54,16 +65,23 @@ export async function generateProductDetails(prompt: string, imageBase64?: strin
 // --- DB Actions ---
 
 export async function createProduct(formData: FormData) {
-    const title = formData.get('title') as string
-    const description = formData.get('description') as string
-    const price = parseFloat(formData.get('price') as string)
-    const category = formData.get('category') as string
-    const image = formData.get('image') as string // In reality, upload to blob storage and get URL. For now, assuming URL or Base64 is passed.
-    const tagsString = formData.get('tags') as string
-    const seoTitle = formData.get('seoTitle') as string
-    const seoDesc = formData.get('seoDesc') as string
+    if (!(await requireAdmin())) return { success: false, error: 'Unauthorized' }
 
-    const tags = tagsString ? tagsString.split(',').map(t => t.trim()) : []
+    const title = String(formData.get('title') || '').trim()
+    const description = String(formData.get('description') || '').trim()
+    const price = Number(formData.get('price'))
+    const category = String(formData.get('category') || '').trim()
+    const image = String(formData.get('image') || '')
+    const tagsString = String(formData.get('tags') || '')
+    const seoTitle = String(formData.get('seoTitle') || '').trim()
+    const seoDesc = String(formData.get('seoDesc') || '').trim()
+    const tags = tagsString ? tagsString.split(',').map(t => t.trim()).filter(Boolean).slice(0, 50) : []
+
+    if (!title || title.length > 200 || !description || description.length > 10_000 ||
+        !category || category.length > 100 || !Number.isFinite(price) || price < 0 || price > 10_000_000 ||
+        image.length > 5_000_000) {
+        return { success: false, error: 'Invalid product data' }
+    }
 
     try {
         await prisma.product.create({
@@ -92,6 +110,8 @@ export async function createProduct(formData: FormData) {
 }
 
 export async function toggleProductPin(id: string, isPinned: boolean) {
+    if (!(await requireAdmin())) return { success: false, error: 'Unauthorized' }
+    if (!id) return { success: false, error: 'Invalid product id' }
     try {
         await prisma.product.update({
             where: { id },
@@ -106,6 +126,10 @@ export async function toggleProductPin(id: string, isPinned: boolean) {
 }
 
 export async function toggleProductFlashSale(id: string, isFlashSale: boolean, price?: number) {
+    if (!(await requireAdmin())) return { success: false, error: 'Unauthorized' }
+    if (!id || (price !== undefined && (!Number.isFinite(price) || price < 0))) {
+        return { success: false, error: 'Invalid flash sale data' }
+    }
     try {
         await prisma.product.update({
             where: { id },
