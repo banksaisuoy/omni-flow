@@ -17,7 +17,7 @@ export default function CartPage() {
 
         // Create Order (Database)
         const result = await placeOrder({
-            userId: "user-123-demo-id", // Hardcoded for simplified flow, ideally comes from auth() session
+            // The server resolves the authenticated user and recomputes prices.
             items: cart.map(item => ({
                 productId: item.id,
                 quantity: item.quantity,
@@ -31,7 +31,7 @@ export default function CartPage() {
         if (result.success) {
             // Clear Cart
             clearCart()
-            alert("Payment Successful! Order #" + result.orderId + " has been placed.")
+            alert("Order #" + result.orderId + " has been placed and is pending payment verification.")
             router.push('/products')
         } else {
             alert("Order Failed: " + result.error)
