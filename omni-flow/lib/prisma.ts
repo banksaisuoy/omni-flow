@@ -6,7 +6,7 @@ const prismaClientSingleton = () => {
         throw new Error('DATABASE_URL is required in production')
     }
     // Keep the local fallback only for development/test environments.
-    const url = configuredUrl || "postgresql://postgres:postgres@127.0.0.1:5433/omniflow?schema=public"
+    const url = configuredUrl || "postgresql://postgres:postgres@127.0.0.1:5432/omniflow?schema=public"
     return new PrismaClient({
         datasources: {
             db: {
