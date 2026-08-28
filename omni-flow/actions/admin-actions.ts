@@ -1,10 +1,16 @@
 'use server'
 
+import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { generateText } from 'ai'
 import { google } from '@/lib/ai'
 
 export async function askBusinessAnalyst(question: string) {
+    const session = await auth()
+    if (session?.user?.role !== 'ADMIN') return { answer: 'Unauthorized' }
+    const normalizedQuestion = question.trim()
+    if (!normalizedQuestion || normalizedQuestion.length > 2000) return { answer: 'Invalid question' }
+
     // 1. Gather Context (RAG-lite)
     // Fetch key stats to feed the AI
     const totalRevenue = await prisma.order.aggregate({
@@ -48,6 +54,9 @@ export async function askBusinessAnalyst(question: string) {
 import { revalidatePath } from 'next/cache'
 
 export async function toggleUserStatus(userId: string, currentStatus: string) {
+    const session = await auth()
+    if (session?.user?.role !== 'ADMIN') return { success: false, error: 'Unauthorized' }
+    if (!userId || !['active', 'suspended'].includes(currentStatus)) return { success: false, error: 'Invalid user status' }
     try {
         const newStatus = currentStatus === 'active' ? 'suspended' : 'active'
         await prisma.user.update({
@@ -63,6 +72,9 @@ export async function toggleUserStatus(userId: string, currentStatus: string) {
 }
 
 export async function deleteUser(userId: string) {
+    const session = await auth()
+    if (session?.user?.role !== 'ADMIN') return { success: false, error: 'Unauthorized' }
+    if (!userId) return { success: false, error: 'Invalid user id' }
     try {
         await prisma.user.delete({ where: { id: userId } })
         revalidatePath('/admin/users')

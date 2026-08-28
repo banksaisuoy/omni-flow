@@ -9,11 +9,12 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Set these values in the Render dashboard or secret group.
       - key: DATABASE_URL
-        value: postgres://postgres:as0861056282@db.zkuwqnfcrinwpnllakrc.supabase.co:5432/postgres
+        sync: false
       - key: NEXTAUTH_SECRET
-        value: ElhG/JgEis2unPrAYViC0ynRP3h9qGe1DkPG31c8fsg=
+        sync: false
       - key: NEXTAUTH_URL
         value: https://omni-flow.onrender.com
       - key: GOOGLE_GENERATIVE_AI_API_KEY
-        value: AIzaSyC-4hF6e1JDKiwtADwg8co7yNGS4D6NwKU
+        sync: false

@@ -61,14 +61,18 @@ export default function NegotiationBot({ productPrice = 100, productId }: { prod
     
     // Simulate streaming for the standard text response to use the utility
     const simulateStreamingAction = async (action: () => Promise<{text: string}>): Promise<string> => {
-        const { text } = await action();
-        
+        const { text } = await action()
+        // Jest/older embedded runtimes may not expose ReadableStream. The
+        // server action already returned complete text, so use it directly in
+        // that case; browsers still take the streaming path below.
+        if (typeof ReadableStream === 'undefined') return text
+
         const stream = new ReadableStream({
             start(controller) {
-                controller.enqueue(new TextEncoder().encode(text));
-                controller.close();
+                controller.enqueue(new TextEncoder().encode(text))
+                controller.close()
             }
-        });
+        })
         
         let accumulatedText = "";
         

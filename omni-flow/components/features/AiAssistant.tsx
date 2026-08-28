@@ -3,10 +3,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MessageSquare, X, Send, Sparkles, Loader2, Minimize2 } from 'lucide-react'
-import { GoogleGenerativeAI } from '@google/generative-ai'
-import { useStore } from '@/lib/store'
-
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GOOGLE_GENERATIVE_AI_API_KEY || '') // Ideally env var
+import { askShoppingAssistant } from '@/actions/ai-actions'
 
 export default function AiAssistant() {
     const [isOpen, setIsOpen] = useState(false)
@@ -15,8 +12,7 @@ export default function AiAssistant() {
     ])
     const [input, setInput] = useState('')
     const [isLoading, setIsLoading] = useState(false)
-    const messagesEndRef = useRef<HTMLDivElement>(null)
-    const { products } = useStore() // Real data context
+        const messagesEndRef = useRef<HTMLDivElement>(null)
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -35,26 +31,12 @@ export default function AiAssistant() {
         setIsLoading(true)
 
         try {
-            // Prepare context
-            const productContext = products.map(p =>
-                `- ${p.title} (${p.category}): $${p.price} ${p.isFlashSale ? `(ON SALE: $${p.flashPrice})` : ''} - ${p.description}`
-            ).join('\n')
-
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
-            const prompt = `
-            You are a helpful AI shopping assistant for "OmniFlow". 
-            Here is our current product catalog context:
-            ${productContext}
-
-            User Question: ${userMsg}
-
-            Answer the user in a friendly, concise way. If they ask about products, recommend from the list. If they ask about sales, mention the flash sales. Do not make up products not in the list.
-            `
-
-            const result = await model.generateContent(prompt)
-            const response = result.response.text()
-
-            setMessages(prev => [...prev, { role: 'ai', content: response }])
+            const result = await askShoppingAssistant(userMsg)
+            if (result.success) {
+                setMessages(prev => [...prev, { role: 'ai', content: result.answer ?? 'No answer was returned.' }])
+            } else {
+                setMessages(prev => [...prev, { role: 'ai', content: result.error ?? 'The shopping assistant is unavailable.' }])
+            }
         } catch (error) {
             console.error("AI Chat Error", error)
             setMessages(prev => [...prev, { role: 'ai', content: "I'm having trouble connecting to the neural network. Please try again later." }])

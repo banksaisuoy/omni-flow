@@ -1,27 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Save, RefreshCw, CheckCircle, AlertTriangle, Key } from 'lucide-react'
+import { CheckCircle, Key } from 'lucide-react'
 
 export default function SettingsPage() {
-    const [googleKey, setGoogleKey] = useState('')
-    const [supabaseUrl, setSupabaseUrl] = useState('')
-    const [status, setStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle')
-
-    // Simulate loading existing keys (in reality these are server-side envs, so we might mask them)
-    useEffect(() => {
-        setGoogleKey('AIzaSyC-***************************')
-    }, [])
-
-    const handleSave = () => {
-        setStatus('checking')
-        // Mock verification process
-        setTimeout(() => {
-            setStatus('valid')
-        }, 1500)
-    }
-
     return (
         <div className="max-w-4xl mx-auto">
             <h1 className="text-3xl font-bold text-white mb-2">System Configuration</h1>
@@ -42,48 +24,15 @@ export default function SettingsPage() {
                     <div className="space-y-6">
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-slate-400">Google Gemini API Key</label>
-                            <div className="flex gap-4">
-                                <input
-                                    type="text"
-                                    value={googleKey}
-                                    onChange={(e) => {
-                                        setGoogleKey(e.target.value)
-                                        setStatus('idle')
-                                    }}
-                                    className="flex-1 bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 py-3 text-white font-mono focus:border-indigo-500 outline-none transition-colors"
-                                    placeholder="AIza..."
-                                />
-                                <button
-                                    onClick={handleSave}
-                                    disabled={status === 'checking'}
-                                    className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 disabled:opacity-50 transition-all flex items-center gap-2"
-                                >
-                                    {status === 'checking' ? <RefreshCw className="animate-spin" /> : <Save size={18} />}
-                                    Save & Test
-                                </button>
+                            <div className="rounded-xl border border-slate-700/50 bg-slate-950/50 px-4 py-3">
+                                <p className="text-sm text-slate-300 font-mono">Managed by deployment secret</p>
+                                <p className="text-xs text-slate-500 mt-1">API keys are never stored or tested in the browser. Configure GOOGLE_GENERATIVE_AI_API_KEY in the deployment platform.</p>
                             </div>
 
-                            {/* Validation Status */}
-                            {status === 'valid' && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="flex items-center gap-2 text-green-400 text-sm font-bold mt-2"
-                                >
-                                    <CheckCircle size={16} />
-                                    Connection Validated. AI Services Operational.
-                                </motion.div>
-                            )}
-                            {status === 'invalid' && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: -10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    className="flex items-center gap-2 text-red-400 text-sm font-bold mt-2"
-                                >
-                                    <AlertTriangle size={16} />
-                                    Connection Failed. Invalid API Key.
-                                </motion.div>
-                            )}
+                            <div className="flex items-center gap-2 text-slate-500 text-sm mt-2">
+                                <CheckCircle size={16} />
+                                Runtime configuration is managed outside the application.
+                            </div>
                         </div>
 
                         <div className="divider h-px bg-slate-800 my-4" />
@@ -93,7 +42,7 @@ export default function SettingsPage() {
                             <input
                                 type="text"
                                 readOnly
-                                value="https://placeholder.supabase.co"
+                                value="Configured in deployment environment"
                                 className="w-full bg-slate-900/50 border border-slate-800 rounded-xl px-4 py-3 text-slate-500 font-mono cursor-not-allowed"
                             />
                         </div>

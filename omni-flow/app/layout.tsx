@@ -10,6 +10,9 @@ export const metadata: Metadata = {
   description: "AI-Powered Commerce System",
 };
 
+// The layout reads the request-bound auth session; do not prerender it as static HTML.
+export const dynamic = "force-dynamic";
+
 import AiAssistant from "@/components/features/AiAssistant";
 
 import { auth } from "@/auth";
