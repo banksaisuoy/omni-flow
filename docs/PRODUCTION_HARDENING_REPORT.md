@@ -6,7 +6,7 @@
 
 | รายการ | ค่า |
 |---|---|
-| Remote head | `857b011df03d7d450c77bb83edd142675bd24e36` |
+| Remote head | `4a9c8480543df2d504fed6e1a15353746824b51c` |
 | PR state | Open, mergeable, checks clean |
 | Handoff bundle | [Google Drive รุ่น 2026-08-27.3](https://drive.google.com/drive/folders/1ermg54w5NpKF7ZLd7RXSJ9PHV9YbegzI) |
 | Master report | [FINAL_REPORT_TH.md ใน Drive](https://drive.google.com/drive/folders/1ermg54w5NpKF7ZLd7RXSJ9PHV9YbegzI) |
@@ -28,16 +28,16 @@
 | Tests | 16 tests ผ่านจาก 3 suites |
 | Production build | ผ่านด้วย build-only values |
 | Production dependency audit | ไม่พบ vulnerabilities ระดับ high/critical |
-| Runtime smoke | `/` HTTP 200 |
+| Runtime smoke | Local `/`, `/login`, and `/api/products` route checks completed; live Render `/` and `/login` rendered, while live `/products` showed an empty catalog/loading state |
 | GitHub Build Test | ผ่าน |
 | GitHub QA | ผ่าน |
 | Review workflow | Skipped ตาม workflow configuration |
 
-การทดสอบใช้ isolated/test configuration เท่านั้น ไม่ได้ยืนยัน database, NextAuth, AI provider หรือ deployment account จริง
+การทดสอบใช้ isolated/test configuration เท่านั้น ไม่ได้ยืนยัน database, NextAuth, AI provider หรือ deployment account จริง บน live Render ตรวจพบว่า `/api/products` ไม่ใช่ route ที่มีอยู่ใน source ปัจจุบันและตอบ 404 ตามปกติ แต่หน้า `/products` ยังคงแสดง `Thinking...` เมื่อ server action/database ไม่จบ จึงเพิ่ม timeout และ error state ใน commit `4a9c848` เพื่อไม่ให้ UI ค้างถาวร
 
 ## Production blockers และงานถัดไป
 
-ต้องตั้งค่า database จริง, migrations/backup/restore, auth secret, HTTPS/domain/CORS, storage และ monitoring/alerts ผ่าน platform secret manager ห้ามใช้ค่าใน `.env.example` เป็น secret จริง Credential ที่เคย commit หรืออยู่ใน old image layers ต้อง rotate/revoke ที่ provider เพราะการลบออกจาก current tree ไม่ได้ลบประวัติเดิม
+ต้องตั้งค่า database จริงพร้อม seed/published product catalog, migrations/backup/restore, auth secret, HTTPS/domain/CORS, storage และ monitoring/alerts ผ่าน platform secret manager ห้ามใช้ค่าใน `.env.example` เป็น secret จริง Credential ที่เคย commit หรืออยู่ใน old image layers ต้อง rotate/revoke ที่ provider เพราะการลบออกจาก current tree ไม่ได้ลบประวัติเดิม
 
 ควรเพิ่ม integration tests ที่ใช้ Prisma transaction สำหรับ `placeOrder`, ทดสอบ unauthenticated/USER/ADMIN authorization, จำกัด product-image AI action และตรวจ static client bundle ว่าไม่มี Gemini key หรือ `GoogleGenerativeAI` import ฝั่ง browser ต้องกำหนด policy ว่า seller จะจัดการ product ได้หรือไม่ เพราะ guard ปัจจุบันตั้งใจให้ ADMIN เท่านั้น
 
