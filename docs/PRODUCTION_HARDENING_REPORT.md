@@ -8,8 +8,8 @@
 |---|---|
 | Remote head | `4a9c8480543df2d504fed6e1a15353746824b51c` |
 | PR state | Open, mergeable, checks clean |
-| Handoff bundle | [Google Drive รุ่น 2026-08-27.3](https://drive.google.com/drive/folders/1ermg54w5NpKF7ZLd7RXSJ9PHV9YbegzI) |
-| Master report | [FINAL_REPORT_TH.md ใน Drive](https://drive.google.com/drive/folders/1ermg54w5NpKF7ZLd7RXSJ9PHV9YbegzI) |
+| Handoff bundle | [Google Drive รุ่น 2026-08-28.4](https://drive.google.com/drive/folders/10feI_U8qb_XixTdr6XUVqU-vYb_7vigI) |
+| Master report | [FINAL_REPORT_TH.md ใน Drive](https://drive.google.com/drive/folders/10feI_U8qb_XixTdr6XUVqU-vYb_7vigI) |
 
 ## การแก้ไขด้าน security และ correctness
 
